@@ -23,8 +23,8 @@ import {
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
-const pegjs = require('pegjs');
-const fs = require('fs');
+
+import { compile } from './compiler'
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -37,12 +37,6 @@ let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
-function makeParser(){
-	const source = fs.readFileSync(__dirname + '/../src/grammer.pegjs', {
-		encoding: 'utf8',
-	});
-	return pegjs.generate(source);
-}
 
 connection.onInitialize((params: InitializeParams) => {
 	let capabilities = params.capabilities;
@@ -140,22 +134,35 @@ documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
 });
 
-let variables: [string, number][] = [];
+let varTable:  {
+	name: string,
+	location: {
+		line: number,
+		offset:number,
+		column: number
+	},
+	value: number
+}[];
 
+let errors: {
+	line:number, offset:number, column: number,
+	message:string
+}[];
+
+let values: number[];
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
 	// このタイミングで色々入れる
-	let parser = makeParser();
+	
 	const text = change.document.getText()
-	console.dir(text)
-	try{
-		let [result, vars, errors] = parser.parse(text);
-		console.dir(vars);
-		variables = vars;
-	}catch(e){
-		console.dir(e);
-	}
+	console.dir(text);
+	let compileResult = compile(text);
+	
+	varTable = compileResult.varTable;
+	console.dir(compileResult);
+	errors = compileResult.errors;
+	values = compileResult.values;
 	//validateTextDocument(change.document);
 
 });
@@ -219,15 +226,17 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		console.dir("on compl"+variables)
-		return variables.map(v=> {
+		
+		const items =  varTable?.map(v=> {
 			return {
-				label: v[0],
+				label: v.name,
 				kind: CompletionItemKind.Field,
-				data: 1
+				data: v.name
 			}
 
 		});
+		console.dir(items);
+		return items;
 		
 	}
 );
@@ -236,14 +245,18 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
-		}
-		return item;
+		// if (item.data === 1) {
+		// 	item.detail = 'TypeScript details';
+		// 	item.documentation = 'TypeScript documentation';
+		// } else if (item.data === 2) {
+		// 	item.detail = 'JavaScript details';
+		// 	item.documentation = 'JavaScript documentation';
+		// }
+		// return item;
+		 let v = varTable?.find(v=>v.name === item.label);
+		 item.detail = 'Field: '+v?.name + '='+v?.value;
+		 item.documentation = 'Value: '+v?.value;
+		 return item;
 	}
 );
 

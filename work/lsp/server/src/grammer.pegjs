@@ -5,7 +5,7 @@
 
 script = declear_var* e:expression*
 {
-	return [e, varTable, errors];
+	return {values:e, varTable, errors};
 }
 
 NUMBER = s:([1-9][0-9]*){

@@ -8,6 +8,8 @@ export function makeParser(){
 	return pegjs.generate(source);
 }
 
+const parser = makeParser();
+
 export function compile(src: string): {
 	values: number[],
 	varTable: {
@@ -24,8 +26,6 @@ export function compile(src: string): {
 		message:string
 	}[]
 }
-
 {
-	const parser = makeParser();
 	return parser.parse(src);
 }
