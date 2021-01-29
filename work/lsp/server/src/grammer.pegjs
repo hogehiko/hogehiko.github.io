@@ -40,9 +40,7 @@ variable = name:IDENFITIER _ {
 	}else{
 		errors.push({
 			message: 'No such variable',
-			line: l.start.line,
-			offset: l.start.offset,
-			column: l.start.column
+			location: l
 		});
 		return 0;
 	}

@@ -174,16 +174,41 @@ documents.onDidChangeContent(change => {
 	// このタイミングで色々入れる
 	
 	const text = change.document.getText()
-	console.dir(text);
 	let compileResult = compile(text);
 	
 	varTable = compileResult.varTable;
-	console.dir(compileResult);
 	errors = compileResult.errors;
 	values = compileResult.values;
-	//validateTextDocument(change.document);
-
+	validate(change.document, errors);
 });
+
+async function validate(textDocument:TextDocument, errors:  {
+	location: {
+		start:{
+			line: number,
+			offset:number,
+			column: number	
+		},
+		end:{
+			line: number,
+			offset:number,
+			column: number	
+		}
+	},
+	message:string
+}[]){
+	const diagnostics: Diagnostic[] = errors.map(e=>({
+		severity: DiagnosticSeverity.Warning,
+			range: {
+				start: textDocument.positionAt(e.location.start.offset),
+				end: textDocument.positionAt(e.location.end.offset)
+			},
+			message: e.message,
+	}));
+	connection.sendDiagnostics({uri:textDocument.uri,  diagnostics})
+}
+
+
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// In this simple example we get the settings for every validate run.
