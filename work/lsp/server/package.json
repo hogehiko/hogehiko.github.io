@@ -13,9 +13,12 @@
 	},
 	"dependencies": {
 		"pegjs": "^0.10.0",
+		"ts-node": "^9.1.1",
 		"ts-pegjs": "^0.3.0",
 		"vscode-languageserver": "^7.0.0",
 		"vscode-languageserver-textdocument": "^1.0.1"
 	},
-	"scripts": {}
+	"scripts": {
+		"lang": "ts-node src/run_compiler.ts"
+	}
 }

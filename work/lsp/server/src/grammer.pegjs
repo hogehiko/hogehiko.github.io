@@ -1,10 +1,11 @@
 {
-	const varTable = [];
+	const varTable= [];
+	const errors = [];
 }
 
 script = declear_var* e:expression*
 {
-	return [e, varTable];
+	return [e, varTable, errors];
 }
 
 NUMBER = s:([1-9][0-9]*){
@@ -16,16 +17,33 @@ IDENFITIER = id:([a-z]+){
 }
 
 
-declear_var = 'let' _ name:IDENFITIER _  '=' _ num:expression {
-	varTable.push([name, num]);
-}
+declear_var = 
+	'let' _ 
+	id:(
+		id:IDENFITIER
+		{
+			const l = location();
+            return [id, {line: l.start.line, offset: l.start.offset, column: l.start.column}]
+		}
+	) 
+	_  '=' _ num:expression 
+	{
+		varTable.push({name: id[0], location: id[1], value: num});
+	}
 
 variable = name:IDENFITIER _ {
-	let vars = varTable.filter(v=>v[0] === name);
+	const l = location();
+	let vars = varTable.filter(v=>v.name === name);
 	if(vars.length === 1){
-		return vars[0][1];
+		return vars[0].value;
 	}else{
-		throw new Error("No such variable: "+JSON.stringify(varTable) );
+		errors.push({
+			message: 'No such variable',
+			line: l.start.line,
+			offset: l.start.offset,
+			column: l.start.column
+		});
+		return 0;
 	}
 }
 

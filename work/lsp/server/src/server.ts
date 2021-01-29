@@ -150,7 +150,7 @@ documents.onDidChangeContent(change => {
 	const text = change.document.getText()
 	console.dir(text)
 	try{
-		let [result, vars] = parser.parse(text);
+		let [result, vars, errors] = parser.parse(text);
 		console.dir(vars);
 		variables = vars;
 	}catch(e){
