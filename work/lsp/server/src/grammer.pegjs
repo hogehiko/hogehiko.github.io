@@ -23,11 +23,12 @@ declear_var =
 		id:IDENFITIER
 		{
 			const l = location();
-            return [id, {line: l.start.line, offset: l.start.offset, column: l.start.column}]
+            return [id, l]
 		}
 	) 
 	_  '=' _ num:expression 
 	{
+		
 		varTable.push({name: id[0], location: id[1], value: num});
 	}
 

@@ -137,15 +137,33 @@ documents.onDidClose(e => {
 let varTable:  {
 	name: string,
 	location: {
-		line: number,
-		offset:number,
-		column: number
+		start:{
+			line: number,
+			offset:number,
+			column: number	
+		},
+		end:{
+			line: number,
+			offset:number,
+			column: number	
+		}
 	},
 	value: number
 }[];
 
 let errors: {
-	line:number, offset:number, column: number,
+	location: {
+		start:{
+			line: number,
+			offset:number,
+			column: number	
+		},
+		end:{
+			line: number,
+			offset:number,
+			column: number	
+		}
+	},
 	message:string
 }[];
 
