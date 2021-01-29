@@ -14,12 +14,17 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
-	InitializeResult
+	InitializeResult,
+	CodeLens,
+	Command
 } from 'vscode-languageserver/node';
+
 
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
+const pegjs = require('pegjs');
+const fs = require('fs');
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -31,6 +36,13 @@ let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
+
+function makeParser(){
+	const source = fs.readFileSync(__dirname + '/../src/grammer.pegjs', {
+		encoding: 'utf8',
+	});
+	return pegjs.generate(source);
+}
 
 connection.onInitialize((params: InitializeParams) => {
 	let capabilities = params.capabilities;
@@ -128,10 +140,24 @@ documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
 });
 
+let variables: [string, number][] = [];
+
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	validateTextDocument(change.document);
+	// このタイミングで色々入れる
+	let parser = makeParser();
+	const text = change.document.getText()
+	console.dir(text)
+	try{
+		let [result, vars] = parser.parse(text);
+		console.dir(vars);
+		variables = vars;
+	}catch(e){
+		console.dir(e);
+	}
+	//validateTextDocument(change.document);
+
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
@@ -183,27 +209,26 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 connection.onDidChangeWatchedFiles(_change => {
 	// Monitored files have change in VSCode
+	
 	connection.console.log('We received an file change event');
 });
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+	(textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
+		console.dir("on compl"+variables)
+		return variables.map(v=> {
+			return {
+				label: v[0],
+				kind: CompletionItemKind.Field,
 				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
 			}
-		];
+
+		});
+		
 	}
 );
 
