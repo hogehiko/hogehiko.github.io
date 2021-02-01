@@ -24,7 +24,7 @@ import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
 
-import { compile } from './compiler'
+import { compile, ErrorDef, VariableDef } from './compiler'
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -134,38 +134,9 @@ documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
 });
 
-let varTable:  {
-	name: string,
-	location: {
-		start:{
-			line: number,
-			offset:number,
-			column: number	
-		},
-		end:{
-			line: number,
-			offset:number,
-			column: number	
-		}
-	},
-	value: number
-}[];
+let varTable:  VariableDef[];
 
-let errors: {
-	location: {
-		start:{
-			line: number,
-			offset:number,
-			column: number	
-		},
-		end:{
-			line: number,
-			offset:number,
-			column: number	
-		}
-	},
-	message:string
-}[];
+let errors: ErrorDef[];
 
 let values: number[];
 // The content of a text document has changed. This event is emitted
@@ -182,21 +153,7 @@ documents.onDidChangeContent(change => {
 	validate(change.document, errors);
 });
 
-async function validate(textDocument:TextDocument, errors:  {
-	location: {
-		start:{
-			line: number,
-			offset:number,
-			column: number	
-		},
-		end:{
-			line: number,
-			offset:number,
-			column: number	
-		}
-	},
-	message:string
-}[]){
+async function validate(textDocument:TextDocument, errors:  ErrorDef[]){
 	const diagnostics: Diagnostic[] = errors.map(e=>({
 		severity: DiagnosticSeverity.Warning,
 			range: {

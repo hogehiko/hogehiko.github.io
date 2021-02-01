@@ -11,7 +11,7 @@ export function makeParser(){
 
 const parser = makeParser();
 
-export function compile(src: string): {
+export type VariableDef = {
 	values: number[],
 	varTable: {
 		name: string,
@@ -28,22 +28,29 @@ export function compile(src: string): {
 			}
 		},
 		value: number
-	}[],
-	errors:{
-		location: {
-			start:{
-				line: number,
-				offset:number,
-				column: number	
-			},
-			end:{
-				line: number,
-				offset:number,
-				column: number
-			}
+	}
+};
+
+export type ErrorDef = {
+	location: {
+		start:{
+			line: number,
+			offset:number,
+			column: number	
 		},
-		message:string
-	}[]
+		end:{
+			line: number,
+			offset:number,
+			column: number
+		}
+	},
+	message:string
+}
+
+export function compile(src: string): {
+	values: number[],
+	varTable: VariableDef[],
+	errors:ErrorDef[]
 }
 {
 	try{
