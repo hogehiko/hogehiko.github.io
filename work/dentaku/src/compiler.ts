@@ -12,23 +12,20 @@ export function makeParser(){
 const parser = makeParser();
 
 export type VariableDef = {
-	values: number[],
-	varTable: {
-		name: string,
-		location: {
-			start:{
-				line: number,
-				offset:number,
-				column: number	
-			},
-			end:{
-				line: number,
-				offset:number,
-				column: number
-			}
+	name: string,
+	location: {
+		start:{
+			line: number,
+			offset:number,
+			column: number	
 		},
-		value: number
-	}
+		end:{
+			line: number,
+			offset:number,
+			column: number
+		}
+	},
+	value: number
 };
 
 export type ErrorDef = {

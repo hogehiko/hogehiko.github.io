@@ -1,4 +1,3 @@
-import { read } from 'fs';
 import * as readline from 'readline';
 import * as compiler from './compiler';
 
