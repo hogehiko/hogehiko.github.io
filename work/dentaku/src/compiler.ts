@@ -28,7 +28,7 @@ export type VariableDef = {
 	value: number
 };
 
-export type CompileError = {
+export type CompilationError = {
 	location: {
 		start:{
 			line: number,
@@ -47,7 +47,7 @@ export type CompileError = {
 export function compile(src: string): {
 	values: number[],
 	varTable: VariableDef[],
-	errors:CompileError[]
+	errors:CompilationError[]
 }
 {
 	try{
