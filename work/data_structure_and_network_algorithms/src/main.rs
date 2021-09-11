@@ -34,6 +34,7 @@ impl DHeap{
 
     fn set(&mut self, x: usize, item: Item){
         self.value[x-1] = Some(item);
+        self.size = cmp::max(self.size, x);
     }
 
     fn slice(&self, start: usize, end: usize)-> &[Option<Item>]{
@@ -60,23 +61,31 @@ impl DHeap{
     }
 
     fn shiftdown(&mut self, i: Item,  mut x: usize){
+        println!(" index {:?}", x);
         let mut c: usize;
         c = self.minchild(x);
         while c != 0 && self.get(c).key < i.key {
-            self.mv(x, c);
+            self.mv(c, x);
             x = c;
             c = self.minchild(c);
         }
+        self.set(x, i);
+        println!("end shiftdown {:?}", self);
     }
 
     fn minchild(&self, x: usize) -> usize{
         if HEAP_DEPTH * ( x -1 )+2 > self.size {
+            println!("{:?}", 0);
             return 0;
         }else{
             if HEAP_DEPTH * (x-1)+2<= self.size{
                 let start = HEAP_DEPTH * (x -1)+ 2;
-                let end = cmp::min::<usize>(HEAP_DEPTH * (x-1)+2, self.size);
+                let end = cmp::min::<usize>(HEAP_DEPTH * x + 1, self.size);
+                println!("size {:?}", self.size);
+                println!("start {:?}", start);
+                println!("end {:?}", end);
                 let index = (start..end).min_by_key(|x| self.get(*x).value);
+                println!("{:?}", index);
                 return index.unwrap();
             }
             panic!("why");
@@ -88,6 +97,11 @@ impl DHeap{
             value: [None;HEAP_WIDTH ^ HEAP_DEPTH],
             size: 0
         };
+        
+        for (x, each) in data.iter().enumerate() {
+            h.set(x+1, *each)
+        }
+        println!("{:?}", h);
         for (x, each) in data.iter().enumerate() {
             h.shiftdown(*each, x+1)
         }
@@ -98,7 +112,7 @@ impl DHeap{
 
 
 fn main() {
-    let h = DHeap::new(&[Item::new(4,4), Item::new(1,1)]);
+    let h = DHeap::new(&[Item::new(4,4), Item::new(1,1), Item::new(2,2)]);
     println!("{:?}", h);
     println!("Hello, world!");
 }
